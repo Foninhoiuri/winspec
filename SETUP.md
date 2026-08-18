@@ -27,7 +27,7 @@ git push -u origin main
 Após fazer push no GitHub:
 
 ```powershell
-iex (Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/seu-usuario/windows-specs-project/main/specs.ps1').Content
+irm https://raw.githubusercontent.com/Foninhoiuri/winspec/main/specs.ps1 | iex
 ```
 
 ### 4️⃣ Usar seu próprio domínio
@@ -35,7 +35,7 @@ iex (Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/seu-usuario/windo
 Se tiver um domínio próprio, faça upload do arquivo `specs.ps1` para seu servidor:
 
 ```powershell
-iex (Invoke-WebRequest -Uri 'https://seu-dominio.com/specs.ps1').Content
+irm https://seu-dominio.com/specs.ps1 | iex
 ```
 
 ---

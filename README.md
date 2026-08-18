@@ -7,7 +7,7 @@ Script PowerShell para visualizar especificações completas do seu computador W
 Execute diretamente do PowerShell com uma linha:
 
 ```powershell
-iex (Invoke-WebRequest -Uri 'https://seu-dominio.com/specs.ps1').Content
+irm https://raw.githubusercontent.com/Foninhoiuri/winspec/main/specs.ps1 | iex
 ```
 
 ## 📋 O que o script mostra
@@ -36,11 +36,11 @@ iex (Invoke-WebRequest -Uri 'https://seu-dominio.com/specs.ps1').Content
 
 1. Faça fork ou crie novo repositório
 2. Salve o arquivo `specs.ps1` na raiz
-3. Acesse: `https://raw.githubusercontent.com/seu-usuario/seu-repo/main/specs.ps1`
+3. Acesse: `https://raw.githubusercontent.com/Foninhoiuri/winspec/main/specs.ps1`
 
 Use no PowerShell:
 ```powershell
-iex (Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/seu-usuario/seu-repo/main/specs.ps1').Content
+irm https://raw.githubusercontent.com/Foninhoiuri/winspec/main/specs.ps1 | iex
 ```
 
 ### Opção 2: Seu próprio servidor
@@ -56,7 +56,7 @@ iex (Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/seu-usuario/seu-r
 
 Use um serviço como Bit.ly para encurtar:
 ```powershell
-iex (Invoke-WebRequest -Uri 'https://bit.ly/seu-link').Content
+irm https://bit.ly/seu-link | iex
 ```
 
 ## ⚙️ Requisitos
@@ -80,5 +80,5 @@ Livre para usar e modificar.
 
 **Exemplo de execução rápida:**
 ```bash
-powershell -Command "iex (Invoke-WebRequest -Uri 'https://seu-dominio.com/specs.ps1').Content"
+powershell -Command "irm https://raw.githubusercontent.com/Foninhoiuri/winspec/main/specs.ps1 | iex"
 ```

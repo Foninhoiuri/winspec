@@ -46,7 +46,7 @@ https://raw.githubusercontent.com/SEU-USUARIO/windows-specs-project/main/specs.p
 ### 4️⃣ Use no PowerShell
 
 ```powershell
-iex (Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/SEU-USUARIO/windows-specs-project/main/specs.ps1').Content
+irm https://raw.githubusercontent.com/Foninhoiuri/winspec/main/specs.ps1 | iex
 ```
 
 ---
@@ -85,7 +85,7 @@ Se tiver um servidor/domínio próprio:
 2. Use diretamente:
 
 ```powershell
-iex (Invoke-WebRequest -Uri 'https://seu-dominio.com/specs.ps1').Content
+irm https://seu-dominio.com/specs.ps1 | iex
 ```
 
 ---
@@ -110,7 +110,7 @@ git push -u origin main
 
 # 5. Compartilhar URL
 echo "Compartilhe esta URL:"
-echo "iex (Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/seu-usuario/windows-specs-project/main/specs.ps1').Content"
+echo "irm https://raw.githubusercontent.com/Foninhoiuri/winspec/main/specs.ps1 | iex"
 ```
 
 ---
