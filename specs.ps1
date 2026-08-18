@@ -41,16 +41,6 @@ try {
     $publicIP = (Invoke-RestMethod -Uri 'https://api.ipify.org' -TimeoutSec 2)
 } catch {}
 
-# ----- Pacotes instalados (registro) -----
-$uninstallPaths = @(
-    'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
-    'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
-    'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
-)
-$pkgCount = (Get-ItemProperty -Path $uninstallPaths -ErrorAction SilentlyContinue |
-    Where-Object { $_.DisplayName } |
-    Select-Object -Property DisplayName -Unique).Count
-
 # ----- Terminal -----
 $terminal = if ($env:WT_SESSION) { 'Windows Terminal' }
             elseif ($env:TERM_PROGRAM) { $env:TERM_PROGRAM }
@@ -66,41 +56,46 @@ try {
 
 $title = "$($env:USERNAME)@$($env:COMPUTERNAME)"
 
-$infoLines = @(
-    @{ Label = 'OS';          Value = "$($os.Caption) [$($os.OSArchitecture)]" }
-    @{ Label = 'Host';        Value = "$($cs.Manufacturer) $($cs.Model)".Trim() }
+# ----- Software -----
+$softwareLines = @(
+    @{ Label = 'OS';        Value = "$($os.Caption) [$($os.OSArchitecture)]" }
+    @{ Label = 'Kernel';    Value = "$($os.Version) (Build $($os.BuildNumber))" }
+    @{ Label = 'Uptime';    Value = $uptimeStr }
+    @{ Label = 'Shell';     Value = "PowerShell $($PSVersionTable.PSVersion)" }
+    @{ Label = 'Terminal';  Value = $terminal }
+    @{ Label = 'Local IP';  Value = $localIP }
+    @{ Label = 'Public IP'; Value = $publicIP }
+)
+
+# ----- Hardware -----
+$hardwareLines = @(
     @{ Label = 'Motherboard'; Value = $boardStr }
-    @{ Label = 'Kernel';      Value = "$($os.Version) (Build $($os.BuildNumber))" }
-    @{ Label = 'Uptime';      Value = $uptimeStr }
-    @{ Label = 'Packages';    Value = "$pkgCount (registry)" }
-    @{ Label = 'Shell';       Value = "PowerShell $($PSVersionTable.PSVersion)" }
-    @{ Label = 'Terminal';    Value = $terminal }
-    @{ Label = 'Resolution';  Value = $resolution }
     @{ Label = 'CPU';         Value = $cpuName }
 )
 
 $gpuIndex = 1
 foreach ($g in $gpuList) {
     $label = if ($gpuList.Count -gt 1) { "GPU $gpuIndex" } else { 'GPU' }
-    $infoLines += @{ Label = $label; Value = $g.Name }
+    $hardwareLines += @{ Label = $label; Value = $g.Name }
     $gpuIndex++
 }
 
-$infoLines += @{ Label = 'Memory'; Value = "$usedRAM GiB / $totalRAM GiB ($ramPct%)" }
+$hardwareLines += @{ Label = 'Memory'; Value = "$usedRAM GiB / $totalRAM GiB ($ramPct%)" }
 
 foreach ($d in $disks) {
     $dTotal = [math]::Round($d.Size / 1GB, 1)
     $dUsed  = [math]::Round(($d.Size - $d.FreeSpace) / 1GB, 1)
     $dPct   = if ($dTotal -gt 0) { [math]::Round(($dUsed / $dTotal) * 100) } else { 0 }
-    $infoLines += @{ Label = "Disk ($($d.DeviceID))"; Value = "$dUsed GB / $dTotal GB ($dPct%)" }
+    $hardwareLines += @{ Label = "Disk ($($d.DeviceID))"; Value = "$dUsed GB / $dTotal GB ($dPct%)" }
 }
 
-$infoLines += @{ Label = 'Local IP';  Value = $localIP }
-$infoLines += @{ Label = 'Public IP'; Value = $publicIP }
+$hardwareLines += @{ Label = 'Resolution'; Value = $resolution }
 
 if ($batt) {
-    $infoLines += @{ Label = 'Battery'; Value = "$($batt.EstimatedChargeRemaining)% ($($batt.Status))" }
+    $hardwareLines += @{ Label = 'Battery'; Value = "$($batt.EstimatedChargeRemaining)% ($($batt.Status))" }
 }
+
+$infoLines = $softwareLines + $hardwareLines
 
 # ---------- Logo (bandeira do Windows: 4 quadrantes sólidos) ----------
 # Usa blocos cheios (█) em vez de letras, porque caracteres como 'l' não
@@ -137,7 +132,14 @@ $labelWidth = (($infoLines | ForEach-Object { $_.Label.Length }) | Measure-Objec
 $rightLines = @()
 $rightLines += @{ Text = $title; IsTitle = $true }
 $rightLines += @{ Text = ('-' * $title.Length); IsTitle = $false; IsSep = $true }
-foreach ($item in $infoLines) {
+
+$rightLines += @{ Text = 'Software'; IsSection = $true }
+foreach ($item in $softwareLines) {
+    $rightLines += @{ Label = $item.Label; Value = $item.Value }
+}
+
+$rightLines += @{ Text = 'Hardware'; IsSection = $true }
+foreach ($item in $hardwareLines) {
     $rightLines += @{ Label = $item.Label; Value = $item.Value }
 }
 
@@ -160,6 +162,8 @@ for ($i = 0; $i -lt $maxLines; $i++) {
             Write-Host $r.Text -ForegroundColor White
         } elseif ($r.IsSep) {
             Write-Host $r.Text -ForegroundColor DarkGray
+        } elseif ($r.IsSection) {
+            Write-Host $r.Text -ForegroundColor Yellow
         } else {
             Write-Host ($r.Label.PadRight($labelWidth)) -ForegroundColor Cyan -NoNewline
             Write-Host " : " -ForegroundColor DarkGray -NoNewline
