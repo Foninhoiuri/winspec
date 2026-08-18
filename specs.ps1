@@ -102,30 +102,34 @@ if ($batt) {
     $infoLines += @{ Label = 'Battery'; Value = "$($batt.EstimatedChargeRemaining)% ($($batt.Status))" }
 }
 
-# ---------- Logo (estilo neofetch, bandeira do Windows) ----------
+# ---------- Logo (bandeira do Windows: 4 quadrantes sólidos) ----------
+# Usa blocos cheios (█) em vez de letras, porque caracteres como 'l' não
+# preenchem sólido em todas as fontes do console e o brilho colava os dois
+# lados no meio, formando um "H" em vez da bandeira.
+$block = [char]0x2588
+$qw    = 15   # largura de cada quadrante
+$gap   = '   '
+$fullBlock  = $block.ToString() * $qw
+
 $logo = @(
-    ''
-    '                                ..,'
-    '                    ....,,:;+ccllll'
-    '      ...,,+:;  cllllllllllllllllll'
-    ',cclllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'lllllllllllllllllllllllllllllllllll'
-    'lllllllllllllllllllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    'llllllllllllll  lllllllllllllllllll'
-    "      ''''''''  '''''''''''''''''''"
-    ''
+    @{ Blank = $true }
+    @{ Left = $fullBlock; LeftColor = 'Red';  Right = $fullBlock; RightColor = 'Green' }
+    @{ Left = $fullBlock; LeftColor = 'Red';  Right = $fullBlock; RightColor = 'Green' }
+    @{ Left = $fullBlock; LeftColor = 'Red';  Right = $fullBlock; RightColor = 'Green' }
+    @{ Left = $fullBlock; LeftColor = 'Red';  Right = $fullBlock; RightColor = 'Green' }
+    @{ Left = $fullBlock; LeftColor = 'Red';  Right = $fullBlock; RightColor = 'Green' }
+    @{ Left = $fullBlock; LeftColor = 'Red';  Right = $fullBlock; RightColor = 'Green' }
+    @{ Blank = $true }
+    @{ Left = $fullBlock; LeftColor = 'Blue'; Right = $fullBlock; RightColor = 'Yellow' }
+    @{ Left = $fullBlock; LeftColor = 'Blue'; Right = $fullBlock; RightColor = 'Yellow' }
+    @{ Left = $fullBlock; LeftColor = 'Blue'; Right = $fullBlock; RightColor = 'Yellow' }
+    @{ Left = $fullBlock; LeftColor = 'Blue'; Right = $fullBlock; RightColor = 'Yellow' }
+    @{ Left = $fullBlock; LeftColor = 'Blue'; Right = $fullBlock; RightColor = 'Yellow' }
+    @{ Left = $fullBlock; LeftColor = 'Blue'; Right = $fullBlock; RightColor = 'Yellow' }
+    @{ Blank = $true }
 )
 
-$logoWidth = ($logo | Measure-Object -Property Length -Maximum).Maximum + 3
+$logoWidth = $qw * 2 + $gap.Length + 3
 
 # ---------- Renderização estilo neofetch ----------
 $labelWidth = (($infoLines | ForEach-Object { $_.Label.Length }) | Measure-Object -Maximum).Maximum
@@ -140,8 +144,15 @@ foreach ($item in $infoLines) {
 $maxLines = [Math]::Max($logo.Count, $rightLines.Count)
 
 for ($i = 0; $i -lt $maxLines; $i++) {
-    $logoLine = if ($i -lt $logo.Count) { $logo[$i] } else { '' }
-    Write-Host $logoLine.PadRight($logoWidth) -ForegroundColor Cyan -NoNewline
+    if ($i -lt $logo.Count -and -not $logo[$i].Blank) {
+        $row = $logo[$i]
+        Write-Host $row.Left -ForegroundColor $row.LeftColor -NoNewline
+        Write-Host $gap -NoNewline
+        Write-Host $row.Right -ForegroundColor $row.RightColor -NoNewline
+        Write-Host '   ' -NoNewline
+    } else {
+        Write-Host (' ' * $logoWidth) -NoNewline
+    }
 
     if ($i -lt $rightLines.Count) {
         $r = $rightLines[$i]
